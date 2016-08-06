@@ -1,0 +1,15 @@
+{{set . "title" "Home"}}
+{{template "header.html" .}}
+
+<div class="container">
+  <h2>{{.video}}</h2>
+  <video id="my-video" class="video-js" controls preload="auto" width="1280" height="720">
+    <source src="/app/file/{{.video}}" type='{{.mime}}'>
+    <p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a web browser that
+      <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+    </p>
+  </video>
+</div>
+
+{{template "footer.html" .}}
