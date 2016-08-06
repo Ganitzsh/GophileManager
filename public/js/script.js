@@ -9,8 +9,10 @@ function watch(name) {
 }
 
 function convertToMP4(name) {
+    $('#progressModal').modal('show')
     if (busy) {
         console.log("Busy");
+        $('#progressModal').modal('hide')
         return
     }
     busy = true
@@ -23,16 +25,20 @@ function convertToMP4(name) {
                 });
                 location.reload();
             } else {
+                $('#progressModal').modal('hide')
                 console.log('Network response was not ok.');
             }
         })
         .catch(function(error) {
+            $('#progressModal').modal('hide')
             console.log('There has been a problem with your fetch operation: ' + error.message);
         });
     busy = false
+
 }
 
 function deleteFile(name) {
+    $('#progressModal').modal('show')
     if (busy) {
         console.log("Busy");
         return
@@ -47,10 +53,12 @@ function deleteFile(name) {
                 });
                 location.reload();
             } else {
+                $('#progressModal').modal('hide')
                 console.log('Network response was not ok.');
             }
         })
         .catch(function(error) {
+            $('#progressModal').modal('hide')
             console.log('There has been a problem with your fetch operation: ' + error.message);
         });
     busy = false
@@ -74,6 +82,7 @@ function validateCompressionForm() {
 }
 
 function downloadFile(name) {
+    $('#progressModal').modal('show')
     if (busy) {
         console.log("Busy");
         return
@@ -88,21 +97,25 @@ function downloadFile(name) {
                 response.blob().then(function(blob) {
                     download(blob, name, mime)
                     console.log(name);
+                    $('#progressModal').modal('hide')
                 });
             } else {
                 response.json().then(function(json) {
                     console.log(json);
                 });
+                $('#progressModal').modal('hide')
                 console.log('Network response was not ok.');
             }
         })
         .catch(function(error) {
+            $('#progressModal').modal('hide')
             console.log('There has been a problem with your fetch operation: ' + error.message);
         });
     busy = false
 }
 
 function compressAndDownload(name, target) {
+    $('#progressModal').modal('show')
     $('#fileName').text('')
     $('#archiveFileName').val('')
     $('#myModal').modal('hide')
@@ -117,10 +130,12 @@ function compressAndDownload(name, target) {
                     location.reload();
                 });
             } else {
+                $('#progressModal').modal('hide')
                 console.log('Network response was not ok.');
             }
         })
         .catch(function(error) {
+            $('#progressModal').modal('hide')
             console.log('There has been a problem with your fetch operation: ' + error.message);
         });
 }
