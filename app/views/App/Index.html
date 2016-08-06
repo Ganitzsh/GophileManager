@@ -88,7 +88,7 @@
                                     <td>
                                         <div class="btn-group btn-group-justified" role="group" aria-label="...">
                                             <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                                <button type="button" class="btn btn-default" aria-label="Left Align" data-toggle="modal" data-target="#myModal">
+                                                <button onclick="setToCompress({{$file.Name}})" type="button" class="btn btn-default" aria-label="Left Align" data-toggle="modal" data-target="#myModal">
                                                     <span class="glyphicon glyphicon-compressed" aria-label="Compress"></span>
                                                     <span class="hidden-xs {{if eq $cat " Video" " Image"}}hidden-sm{{end}}">Compress</class>
                                                 </button>
