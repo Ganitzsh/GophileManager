@@ -1,4 +1,28 @@
-$(document).ready(function() {});
+$(document).ready(function() {
+  $('[data-toggle="tooltip"]').tooltip()
+});
+
+function watch(name) {
+  window.location = "/app/watch/" + name;
+}
+
+function convertToMP4(name) {
+  var str = '/app/convert/' + name
+  var uri = encodeURI(str)
+  fetch(uri).then(function(response) {
+          if (response.ok) {
+              response.json().then(function(json) {
+                  console.log(json);
+              });
+              location.reload();
+          } else {
+              console.log('Network response was not ok.');
+          }
+      })
+      .catch(function(error) {
+          console.log('There has been a problem with your fetch operation: ' + error.message);
+      });
+}
 
 function deleteFile(name) {
     var str = '/app/delete/' + name

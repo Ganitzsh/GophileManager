@@ -10,8 +10,11 @@ GET     /app/compress/:target/name/:name        App.Compress
 GET     /app/delete/:target                     App.Delete
 GET     /app/files                              App.GetFiles
 GET     /app/download/:target                   App.Download
+GET     /app/watch/:target                      App.Video
 GET     /app/:folder                            App.Index
 GET     /auth                                   Auth.Index
+GET     /app/file/:target                       App.Serve
+GET     /app/convert/:target                    App.Convert
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

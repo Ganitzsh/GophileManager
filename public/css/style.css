@@ -8,8 +8,18 @@ body {
 	table-layout: fixed;
 }
 
+td .tooltip {
+    z-index: 2000;
+    position: fixed;
+}
+
 .table td {
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.span {
   overflow: hidden;
   text-overflow: ellipsis;
 }

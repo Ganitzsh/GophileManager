@@ -2,8 +2,12 @@ package controllers
 
 import (
 	"log"
+	"mime"
 	"net/http"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 
 	"github.com/ganitzsh/WebManager/app"
 	"github.com/revel/revel"
@@ -19,6 +23,20 @@ func (c App) Check() revel.Result {
 		return c.Redirect("/auth")
 	}
 	return c.Redirect("/app")
+}
+
+func (c App) Serve(prefix, filepath string) revel.Result {
+	file := c.Params.Get("target")
+	fPath := app.Context.Config.MainDir + "/" + file
+	f, err := os.Open(fPath)
+	if err != nil {
+		c.Response.Status = http.StatusBadRequest
+		return c.RenderJson(map[string]interface{}{
+			"message": err.Error(),
+			"status":  http.StatusBadRequest,
+		})
+	}
+	return c.RenderFile(f, revel.Attachment)
 }
 
 func (c App) Index() revel.Result {
@@ -80,4 +98,44 @@ func (c App) Download() revel.Result {
 		})
 	}
 	return c.RenderFile(f, revel.Inline)
+}
+
+func toMP4(target string) error {
+	ext := filepath.Ext(target)
+	base := app.Context.Config.MainDir + "/" + strings.TrimSuffix(target, ext) + ".mp4"
+	fPath := app.Context.Config.MainDir + "/" + target
+	cmd := exec.Command("ffmpeg", "-i", fPath, "-vcodec", "copy", "-acodec", "copy", base)
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+	log.Printf("Waiting for command to finish...")
+	err = cmd.Wait()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c App) Convert() revel.Result {
+	file := c.Params.Get("target")
+	if err := toMP4(file); err != nil {
+		c.Response.Status = http.StatusBadRequest
+		return c.RenderJson(map[string]interface{}{
+			"message": err.Error(),
+			"status":  http.StatusBadRequest,
+		})
+	}
+	return c.RenderJson(map[string]interface{}{
+		"message": "Successfully converted",
+	})
+}
+
+func (c App) Video() revel.Result {
+	file := c.Params.Get("target")
+	ext := filepath.Ext(file)
+	mime := mime.TypeByExtension(ext)
+	c.RenderArgs["video"] = file
+	c.RenderArgs["mime"] = mime
+	return c.Render()
 }

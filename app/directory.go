@@ -23,6 +23,7 @@ const AVI = "AVI Video"
 const DMG = "Apple Disk Image"
 const MKV = "Matroska High-Definition Video"
 const MP4 = "MP4 Video"
+const TXT = "Plain Text"
 
 const Other = "Other"
 
