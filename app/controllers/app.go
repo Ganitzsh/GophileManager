@@ -122,6 +122,7 @@ func toMP4(target string) error {
 func (c App) Convert() revel.Result {
 	file := c.Params.Get("target")
 	if err := toMP4(file); err != nil {
+		log.Println(err)
 		c.Response.Status = http.StatusBadRequest
 		return c.RenderJson(map[string]interface{}{
 			"message": err.Error(),
