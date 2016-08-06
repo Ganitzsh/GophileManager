@@ -20,6 +20,9 @@ const MIDI = "MIDI Synth Audio"
 const WAV = "WAV Audio"
 const ASD = "Ableton Analysis File"
 const AVI = "AVI Video"
+const DMG = "Apple Disk Image"
+const MKV = "Matroska High-Definition Video"
+const MP4 = "MP4 Video"
 
 const Other = "Other"
 
@@ -29,6 +32,7 @@ const Document = "Document"
 const Archive = "Archive"
 const Audio = "Audio"
 const Video = "Video"
+const Program = "Program"
 
 type Type struct {
 	Cat  Category
@@ -61,6 +65,7 @@ func getKnownMime(mime string) *Type {
 	known_app := make(map[string]*Type)
 	known_app["pdf"] = &Type{Document, PDF}
 	known_app["x-tar"] = &Type{Archive, TAR}
+	known_app["x-apple-diskimage"] = &Type{Program, DMG}
 	known_audio := make(map[string]*Type)
 	known_audio["mpeg"] = &Type{Audio, MP3}
 	known_audio["mid"] = &Type{Audio, MIDI}
@@ -69,6 +74,8 @@ func getKnownMime(mime string) *Type {
 	known_audio["ogg"] = &Type{Audio, OGG}
 	known_video := make(map[string]*Type)
 	known_video["x-msvideo"] = &Type{Video, AVI}
+	known_video["x-matroska"] = &Type{Video, MKV}
+	known_video["mp4"] = &Type{Video, MP4}
 	switch s[0] {
 	case "application":
 		t = known_app[s[1]]
