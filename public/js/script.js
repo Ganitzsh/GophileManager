@@ -1,30 +1,43 @@
+var busy = true
 $(document).ready(function() {
-  $('[data-toggle="tooltip"]').tooltip()
+    $('[data-toggle="tooltip"]').tooltip()
+    busy = false
 });
 
 function watch(name) {
-  window.location = "/app/watch/" + name;
+    window.location = "/app/watch/" + name;
 }
 
 function convertToMP4(name) {
-  var str = '/app/convert/' + name
-  var uri = encodeURI(str)
-  fetch(uri).then(function(response) {
-          if (response.ok) {
-              response.json().then(function(json) {
-                  console.log(json);
-              });
-              location.reload();
-          } else {
-              console.log('Network response was not ok.');
-          }
-      })
-      .catch(function(error) {
-          console.log('There has been a problem with your fetch operation: ' + error.message);
-      });
+    if (busy) {
+        console.log("Busy");
+        return
+    }
+    busy = true
+    var str = '/app/convert/' + name
+    var uri = encodeURI(str)
+    fetch(uri).then(function(response) {
+            if (response.ok) {
+                response.json().then(function(json) {
+                    console.log(json);
+                });
+                location.reload();
+            } else {
+                console.log('Network response was not ok.');
+            }
+        })
+        .catch(function(error) {
+            console.log('There has been a problem with your fetch operation: ' + error.message);
+        });
+    busy = false
 }
 
 function deleteFile(name) {
+    if (busy) {
+        console.log("Busy");
+        return
+    }
+    busy = true
     var str = '/app/delete/' + name
     var uri = encodeURI(str)
     fetch(uri).then(function(response) {
@@ -40,6 +53,7 @@ function deleteFile(name) {
         .catch(function(error) {
             console.log('There has been a problem with your fetch operation: ' + error.message);
         });
+    busy = false
 }
 
 function setToCompress(name) {
@@ -60,6 +74,11 @@ function validateCompressionForm() {
 }
 
 function downloadFile(name) {
+    if (busy) {
+        console.log("Busy");
+        return
+    }
+    busy = true
     var str = '/app/download/' + name
     var uri = encodeURI(str)
     console.log(uri);
@@ -80,6 +99,7 @@ function downloadFile(name) {
         .catch(function(error) {
             console.log('There has been a problem with your fetch operation: ' + error.message);
         });
+    busy = false
 }
 
 function compressAndDownload(name, target) {

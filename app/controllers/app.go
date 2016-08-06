@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/ganitzsh/WebManager/app"
 	"github.com/revel/revel"
@@ -76,6 +77,7 @@ func (c App) Delete() revel.Result {
 			"status":  http.StatusBadRequest,
 		})
 	}
+	time.Sleep(1 * time.Second)
 	return c.RenderJson(map[string]interface{}{
 		"message": "Deleted successfuly",
 		"status":  http.StatusOK,
