@@ -104,7 +104,7 @@
                             {{range $file := $files}}
                                 <tr>
                                     <td>
-                                        <a href="#">{{$file.Name}}</a>
+                                        <a href="/app/file/{{$file.Name}}">{{$file.Name}}</a>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-justified" role="group" aria-label="...">
@@ -115,8 +115,11 @@
                                                 </button>
                                             </div>
                                             <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                                <button data-toggle="tooltip" data-placement="top" title="Download" onclick="downloadFile({{$file.Name}})" type="button" class="btn btn-default" aria-label="Left Align">
-                                                    <span class="glyphicon glyphicon-download" aria-label="Download"></span>
+                                                <!-- <button data-toggle="tooltip" data-placement="top" title="Download" onclick="downloadFile({{$file.Name}})" type="button" class="btn btn-default" aria-label="Left Align"> -->
+                                                <a href="/app/file/{{$file.Name}}">
+                                                    <button data-toggle="tooltip" data-placement="top" title="Download" type="button" class="btn btn-default" aria-label="Left Align">
+                                                        <span class="glyphicon glyphicon-download" aria-label="Download"></span>
+                                                    </a>
                                                     <!-- <span class="hidden-xs {{if eq $cat " Video" " Image"}}hidden-sm hidden-md{{end}}">Download</class> -->
                                                 </button>
                                             </div>
