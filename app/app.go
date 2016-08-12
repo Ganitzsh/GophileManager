@@ -3,6 +3,7 @@ package app
 import (
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -23,6 +24,8 @@ type WebManager struct {
 	Watcher     *fsnotify.Watcher
 	SocketIO    *socketio.Server
 	RevelHandle http.Handler
+	Trash       bool
+	CanConvert  bool
 }
 
 func handle(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +78,27 @@ func watchDirActivity(watcher *fsnotify.Watcher) {
 	}
 }
 
+func binExist(bin string) bool {
+	sysPath := os.Getenv("PATH")
+	log.Println(sysPath)
+	paths := strings.Split(sysPath, ":")
+	for _, path := range paths {
+		f, err := os.Open(path + "/" + bin)
+		if err == nil {
+			return true
+		}
+		f.Close()
+	}
+	return false
+}
+
 func NewWebManager() *WebManager {
+	ffmpegInstalled := binExist("ffmpeg")
+	if ffmpegInstalled {
+		log.Println("ffmpeg is installed")
+	} else {
+		log.Println("ffmpeg is not installed")
+	}
 	server, err := socketio.NewServer(nil)
 	if err != nil {
 		log.Fatal(err)
@@ -97,6 +120,8 @@ func NewWebManager() *WebManager {
 		PWD:         conf.MainDir,
 		SocketIO:    server,
 		RevelHandle: revel.Server.Handler,
+		Trash:       conf.Trash,
+		CanConvert:  ffmpegInstalled,
 	}
 }
 
