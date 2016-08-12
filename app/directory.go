@@ -6,6 +6,8 @@ import (
 	"mime"
 	"path/filepath"
 	"strings"
+
+	"github.com/dustin/go-humanize"
 )
 
 // Types
@@ -47,6 +49,7 @@ type File struct {
 	Category Category
 	Ext      string
 	IsDir    bool
+	Size     string
 }
 
 func getKnownExt(ext string) *Type {
@@ -118,6 +121,21 @@ func cleanName(fp string) string {
 	return c
 }
 
+func CountFilesInDir(dir string) (uint64, error) {
+	var count uint64
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return 0, err
+	}
+	for _, file := range files {
+		cleanedName := cleanName(file.Name())
+		if !strings.HasPrefix(cleanedName, ".") {
+			count++
+		}
+	}
+	return count, nil
+}
+
 func ProcessDir(dir string) (map[Category]interface{}, error) {
 	tmp := make(map[Category]interface{})
 	files, err := ioutil.ReadDir(dir)
@@ -151,6 +169,7 @@ func ProcessDir(dir string) (map[Category]interface{}, error) {
 					Type:     t,
 					Ext:      filepath.Ext(file.Name()),
 					Category: t.Cat,
+					Size:     humanize.Bytes(uint64(file.Size())),
 				}
 				if t.Type != "" {
 					ptr := tmp[t.Cat]

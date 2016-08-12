@@ -1,78 +1,75 @@
-{{set . "title" "Home"}}
-{{template "header.html" .}}
+{{set . "title" "Home"}} {{template "header.html" .}}
 
-<div class="container-fluid" id="notifications">
+<div class="container">
+    <div class="container-fluid" id="notifications"></div>
 
-</div>
-
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title" id="myModalLabel">Compression options</h4>
-            </div>
-            <div class="modal-body">
-                <strong>To compress:
-                </strong>
-                <span id="fileName"></span>
-
-                <div class="form-group" id="compressionFormGroup">
-                    <label for="archiveFileName">Archive name</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="archiveFileName" placeholder="File name" autofocus>
-                        <div class="input-group-addon">.tar</div>
-                    </div>
-                    <span id="nameHelp" class="help-block hidden">You must enter a file name</span>
+    <!-- Compression -->
+    <div class="modal fade" id="compressionModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Compression options</h4>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="validateCompressionForm()">Compress</button>
-            </div>
-        </div>
-    </div>
-</div>
+                <div class="modal-body">
+                    <strong>To compress:
+                    </strong>
+                    <span id="fileName"></span>
 
-<!-- Modal -->
-<div class="modal fade" id="progressModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title" id="myModalLabel">Action in progress...</h4>
-            </div>
-            <div class="modal-body">
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-                        <span class="sr-only">45% Complete</span>
+                    <div class="form-group" id="compressionFormGroup">
+                        <label for="archiveFileName">Archive name</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="archiveFileName" placeholder="File name" autofocus>
+                            <div class="input-group-addon">.tar</div>
+                        </div>
+                        <span id="nameHelp" class="help-block hidden">You must enter a file name</span>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="validateCompressionForm()">Compress</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="sk-fading-circle">
-    <div class="sk-circle1 sk-circle"></div>
-    <div class="sk-circle2 sk-circle"></div>
-    <div class="sk-circle3 sk-circle"></div>
-    <div class="sk-circle4 sk-circle"></div>
-    <div class="sk-circle5 sk-circle"></div>
-    <div class="sk-circle6 sk-circle"></div>
-    <div class="sk-circle7 sk-circle"></div>
-    <div class="sk-circle8 sk-circle"></div>
-    <div class="sk-circle9 sk-circle"></div>
-    <div class="sk-circle10 sk-circle"></div>
-    <div class="sk-circle11 sk-circle"></div>
-    <div class="sk-circle12 sk-circle"></div>
-</div>
+    <!-- Image -->
+    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Image preview</h4>
+                </div>
+                <div class="modal-body">
+                    <a href="#" class="thumbnail">
+                        <img alt="Image preview" id="imgModalSrc">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="container-fluid" id="files"></div>
+    <div class="sk-fading-circle">
+        <div class="sk-circle1 sk-circle"></div>
+        <div class="sk-circle2 sk-circle"></div>
+        <div class="sk-circle3 sk-circle"></div>
+        <div class="sk-circle4 sk-circle"></div>
+        <div class="sk-circle5 sk-circle"></div>
+        <div class="sk-circle6 sk-circle"></div>
+        <div class="sk-circle7 sk-circle"></div>
+        <div class="sk-circle8 sk-circle"></div>
+        <div class="sk-circle9 sk-circle"></div>
+        <div class="sk-circle10 sk-circle"></div>
+        <div class="sk-circle11 sk-circle"></div>
+        <div class="sk-circle12 sk-circle"></div>
+    </div>
+
+    <div class="container" id="files"></div>
+</div>
 
 {{template "footer.html" .}}

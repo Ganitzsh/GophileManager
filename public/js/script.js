@@ -127,9 +127,9 @@ function watch(name) {
 }
 
 function convertToMP4(name) {
-	bootbox.confirm("Convert <strong>" + name + "</strong> to MP4?", function (result) {
+	bootbox.confirm("<h3>Convert</h3><p><strong>" + name + "</strong></p><p>Convert it to MP4?</p>", function (result) {
 		if (result) {
-			var alertID = newNotification('progress', 'Compressing <strong>' + target + '</strong>')
+			var alertID = newNotification('progress', 'Converting <strong>' + name + '</strong>')
 			var str = '/app/convert/' + name
 			str += '?alert_id=' + alertID
 			var uri = encodeURI(str)
@@ -142,6 +142,49 @@ function convertToMP4(name) {
 				.catch(function (error) {});
 		}
 	})
+}
+
+function trashFile(name) {
+	bootbox.confirm("<h3>Warning!</h3><p>Move <strong>" + name + "</strong> to trash?</p>", function (result) {
+		if (result) {
+			var alertID = newNotification('progress', 'Moving <strong>' + name + '</strong> to trash')
+			var str = '/app/trash/file/' + name
+			str += '?alert_id=' + alertID
+			var uri = encodeURI(str)
+			fetch(uri, {
+					credentials: 'same-origin'
+				})
+				.then(function (response) {
+					if (response.ok) {} else {}
+				})
+				.catch(function (error) {});
+		}
+	})
+}
+
+function emptyTrash() {
+	bootbox.confirm("<h3>Warning!</h3><p>Empty the trash?</p><strong>All data will be definitely lost</strong>", function (result) {
+		if (result) {
+			var alertID = newNotification('progress', 'Moving <strong>' + name + '</strong> to trash')
+			var str = '/app/trash/empty'
+			str += '?alert_id=' + alertID
+			var uri = encodeURI(str)
+			fetch(uri, {
+					credentials: 'same-origin'
+				})
+				.then(function (response) {
+					if (response.ok) {} else {}
+				})
+				.catch(function (error) {});
+		}
+	})
+}
+
+function previewImage(name) {
+	$('#imgModalSrc')
+		.attr('src', '/app/file/' + name)
+	$('#imageModal')
+		.modal('show')
 }
 
 function deleteFile(name) {
@@ -183,19 +226,19 @@ function downloadFile(name) {
 		});
 }
 
-function resetMyModal() {
+function resetCompressionModal() {
 	$('#fileName')
 		.text('')
 	$('#archiveFileName')
 		.val('')
-	$('#myModal')
+	$('#compressionModal')
 		.modal('hide')
 }
 
 function setToCompress(name) {
 	$('#fileName')
 		.text(name)
-	$('#myModal')
+	$('#compressionModal')
 		.modal('show')
 }
 
@@ -217,7 +260,7 @@ function validateCompressionForm() {
 
 function compressAndDownload(name, target) {
 	var alertID = newNotification('progress', 'Compressing <strong>' + target + '</strong>', target)
-	resetMyModal()
+	resetCompressionModal()
 	var str = '/app/compress/' + target + '/name/' + name
 	str += '?alert_id=' + alertID
 	var uri = encodeURI(str)

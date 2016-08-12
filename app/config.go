@@ -7,7 +7,9 @@ import (
 )
 
 type AppConfig struct {
-	MainDir string `json:"directory"`
+	MainDir  string `json:"main_dir"`
+	TrashDir string `json:"trash_dir"`
+	Trash    bool   `json"enable_trash"`
 }
 
 func InitAppConfig() {
@@ -15,5 +17,9 @@ func InitAppConfig() {
 	if !set {
 		log.Fatal("No direcory set")
 	}
-	conf = AppConfig{d}
+	t, trash := revel.Config.String("app.trash_dir")
+	if !set {
+		log.Println("WARNING: Trash disabled")
+	}
+	conf = AppConfig{d, t, trash}
 }

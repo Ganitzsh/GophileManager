@@ -7,6 +7,8 @@
 GET     /app                                    App.Index
 GET     /app/compress/:target/name/:name        App.Compress
 GET     /app/delete/:target                     App.Delete
+GET     /app/trash/file/:target                 App.MoveToTrash
+GET     /app/trash/empty                        App.EmptyTrash
 GET     /app/files/:dir                         App.GetFiles
 GET     /app/download/:target                   App.Download
 GET     /app/watch/:target                      App.Video
