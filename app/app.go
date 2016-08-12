@@ -31,6 +31,11 @@ type WebManager struct {
 func handle(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	if strings.HasPrefix(path, "/socket.io/") {
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		w.Header().Add("Access-Control-Allow-Methods",
+			"POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Add("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		Context.SocketIO.ServeHTTP(w, r)
 	} else {
 		Context.RevelHandle.ServeHTTP(w, r)
