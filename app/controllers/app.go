@@ -28,7 +28,7 @@ func (c App) Check() revel.Result {
 
 func (c App) Serve(prefix, filepath string) revel.Result {
 	file := c.Params.Get("target")
-	fPath := app.Context.Config.MainDir + "/" + file
+	fPath := c.Session["pwd"] + "/" + file
 	f, err := os.Open(fPath)
 	if err != nil {
 		c.Response.Status = http.StatusBadRequest
@@ -41,17 +41,13 @@ func (c App) Serve(prefix, filepath string) revel.Result {
 }
 
 func (c App) Index() revel.Result {
-	tmp := c.Params.Get("folder")
-	log.Println("Folder:", tmp)
-	c.RenderArgs["test"] = app.Context.GetMainCategories()
-	c.RenderArgs["content"] = app.Context.Categories
 	return c.Render()
 }
 
 func (c App) Compress() revel.Result {
 	name := c.Params.Get("name")
 	file := c.Params.Get("target")
-	target := app.Context.Config.MainDir
+	target := c.Session["pwd"]
 	log.Println(target + "/" + file)
 	fName := name + ".tar"
 	log.Println(fName)
@@ -68,8 +64,9 @@ func (c App) Compress() revel.Result {
 }
 
 func (c App) Delete() revel.Result {
+	log.Println("PWD (Delete):", c.Session["pwd"])
 	file := c.Params.Get("target")
-	fPath := app.Context.Config.MainDir + "/" + file
+	fPath := c.Session["pwd"] + "/" + file
 	if err := os.Remove(fPath); err != nil {
 		c.Response.Status = http.StatusBadRequest
 		return c.RenderJson(map[string]interface{}{
@@ -85,12 +82,36 @@ func (c App) Delete() revel.Result {
 }
 
 func (c App) GetFiles() revel.Result {
-	return c.RenderJson(app.Context.Categories)
+	tmp := c.Params.Get("dir")
+	path := c.Session["pwd"]
+	if c.Session["pwd"] == "" {
+		c.Session["pwd"] = app.Context.Config.MainDir
+	}
+	if tmp != "" {
+		if tmp == "up" && c.Session["pwd"] != app.Context.Config.MainDir {
+			path = filepath.Dir(c.Session["pwd"])
+		} else if tmp != "up" && tmp != "current" {
+			path += "/" + tmp
+		}
+	}
+	content, err := app.ProcessDir(path)
+	if err != nil {
+		return c.RenderJson(map[string]interface{}{
+			"message": "Directory does not exist: " + strings.TrimPrefix(path, app.Context.Config.MainDir),
+			"status":  http.StatusBadRequest,
+		})
+	}
+	c.Session["pwd"] = path
+	c.RenderArgs["isRoot"] = (path == app.Context.Config.MainDir)
+	log.Println(c.RenderArgs["isRoot"])
+	c.RenderArgs["content"] = content
+	log.Println("PWD:", c.Session["pwd"])
+	return c.RenderTemplate("App/files.html")
 }
 
 func (c App) Download() revel.Result {
 	file := c.Params.Get("target")
-	fPath := app.Context.Config.MainDir + "/" + file
+	fPath := c.Session["pwd"] + "/" + file
 	f, err := os.Open(fPath)
 	if err != nil {
 		c.Response.Status = http.StatusBadRequest
@@ -102,10 +123,10 @@ func (c App) Download() revel.Result {
 	return c.RenderFile(f, revel.Inline)
 }
 
-func toMP4(target string) error {
+func toMP4(pwd, target string) error {
 	ext := filepath.Ext(target)
-	base := app.Context.Config.MainDir + "/" + strings.TrimSuffix(target, ext) + ".mp4"
-	fPath := app.Context.Config.MainDir + "/" + target
+	base := pwd + "/" + strings.TrimSuffix(target, ext) + ".mp4"
+	fPath := pwd + "/" + target
 	cmd := exec.Command("ffmpeg", "-i", fPath, "-vcodec", "copy", "-acodec", "copy", base)
 	err := cmd.Start()
 	if err != nil {
@@ -121,7 +142,7 @@ func toMP4(target string) error {
 
 func (c App) Convert() revel.Result {
 	file := c.Params.Get("target")
-	if err := toMP4(file); err != nil {
+	if err := toMP4(c.Session["pwd"], file); err != nil {
 		log.Println(err)
 		c.Response.Status = http.StatusBadRequest
 		return c.RenderJson(map[string]interface{}{

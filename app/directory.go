@@ -113,11 +113,11 @@ func cleanName(fp string) string {
 	return c
 }
 
-func ProcessDir(dir string) error {
-	log.Println(Context.LoggedIn)
-	files, err := ioutil.ReadDir(Context.Config.MainDir)
+func ProcessDir(dir string) (map[Category]interface{}, error) {
+	tmp := make(map[Category]interface{})
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, file := range files {
 		var f *File
@@ -129,8 +129,8 @@ func ProcessDir(dir string) error {
 			log.Println("Skipping ", cleanedName)
 		} else {
 			if file.IsDir() {
-				if Context.Categories[Dir] == nil {
-					Context.Categories[Dir] = make([]*File, 0)
+				if tmp[Dir] == nil {
+					tmp[Dir] = make([]*File, 0)
 				}
 				f = &File{
 					Name:     file.Name(),
@@ -138,7 +138,7 @@ func ProcessDir(dir string) error {
 					Type:     nil,
 					Category: Dir,
 				}
-				Context.Categories[Dir] = append(Context.Categories[Dir].([]*File), f)
+				tmp[Dir] = append(tmp[Dir].([]*File), f)
 			} else {
 				t = getKnownType(cleanedName)
 				f = &File{
@@ -148,10 +148,10 @@ func ProcessDir(dir string) error {
 					Category: t.Cat,
 				}
 				if t.Type != "" {
-					ptr := Context.Categories[t.Cat]
+					ptr := tmp[t.Cat]
 					if ptr == nil { // IF doesn't exist
-						Context.Categories[t.Cat] = make(map[string][]*File, 0)
-						ptr = Context.Categories[t.Cat]
+						tmp[t.Cat] = make(map[string][]*File, 0)
+						ptr = tmp[t.Cat]
 					}
 					subCat := ptr.(map[string][]*File)
 					subCatPtr := subCat[t.Type]
@@ -163,24 +163,24 @@ func ProcessDir(dir string) error {
 			}
 		}
 	}
-	for cat, entity := range Context.Categories {
+	// Print debug
+	for cat, entity := range tmp {
 		log.Println(cat)
 		t := reflect.TypeOf(entity)
 		if t.Kind() == reflect.Map { // If sub-cat
 			subCats := entity.(map[string][]*File)
 			for subCat, files := range subCats { // List sub-cat files
-				log.Println("   ", subCat)
+				log.Println("\t", subCat)
 				for _, file := range files {
-					log.Println("      ", file.Name)
+					log.Println("\t\t", file.Name)
 				}
 			}
 		} else { // List files
 			files := entity.([]*File)
 			for _, file := range files {
-				log.Println("   ", file.Name)
+				log.Println("\t", file.Name)
 			}
 		}
 	}
-	Context.LoggedIn = false
-	return nil
+	return tmp, nil
 }

@@ -54,115 +54,21 @@
     </div>
 </div>
 
-<div class="container-fluid">
-    {{range $cat, $content := .content}}
-        <h3>{{ $cat }}</h3>
-        {{if eq $cat "Directory"}}
-            <div class="table-responsive">
-                <table class="table">
-                    <tr>
-                        <th class="col-xs-7 col-sm-8 col-md-10">Name</th>
-                        <th class="col-xs-5 col-sm-4 col-md-2">Options</th>
-                    </tr>
-                    {{range $dir := $content}}
-                        <tr>
-                            <td>
-                                <a href="#">{{$dir.Name}}</a>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                                    <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                        <button data-toggle="tooltip" data-placement="top" title="Go To" type="button" class="btn btn-default" data-toggle="modal" data-target="#archiveName" aria-label="Left Align">
-                                            <span class="glyphicon glyphicon-share-alt" aria-label="Go To"></span>
-                                            <!-- <span class="hidden-xs">Go to</class> -->
-                                        </button>
-                                    </div>
-                                    <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                        <button data-toggle="tooltip" data-placement="top" title="Compress" onclick="setToCompress({{$dir.Name}})" type="button" class="btn btn-default" aria-label="Left Align">
-                                            <span class="glyphicon glyphicon-compressed" aria-label="Compress"></span>
-                                            <!-- <span class="hidden-xs">Compress</class> -->
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    {{end}}
-                </table>
-            </div>
-        {{else}}
-            {{range $subCat, $files := $content}}
-                <h4>{{ $subCat }}</h4>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th class="col-xs-7 col-sm-7 col-md-10">Name</th>
-                                <th class="col-xs-6 col-sm-5 col-md-2">Options</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{range $file := $files}}
-                                <tr>
-                                    <td>
-                                        <a href="/app/file/{{$file.Name}}">{{$file.Name}}</a>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                                            <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                                <button data-toggle="tooltip" data-placement="top" title="Compress" onclick="setToCompress({{$file.Name}})" type="button" class="btn btn-default" aria-label="Left Align">
-                                                    <span class="glyphicon glyphicon-compressed" aria-label="Compress"></span>
-                                                    <!-- <span class="hidden-xs {{if eq $cat " Video" " Image"}}hidden-sm hidden-md{{end}}">Compress</class> -->
-                                                </button>
-                                            </div>
-                                            <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                                <!-- <button data-toggle="tooltip" data-placement="top" title="Download" onclick="downloadFile({{$file.Name}})" type="button" class="btn btn-default" aria-label="Left Align"> -->
-                                                <a href="/app/file/{{$file.Name}}">
-                                                    <button data-toggle="tooltip" data-placement="top" title="Download" type="button" class="btn btn-default" aria-label="Left Align">
-                                                        <span class="glyphicon glyphicon-download" aria-label="Download"></span>
-                                                    </a>
-                                                    <!-- <span class="hidden-xs {{if eq $cat " Video" " Image"}}hidden-sm hidden-md{{end}}">Download</class> -->
-                                                </button>
-                                            </div>
-                                            {{if eq $cat "Video"}}
-                                                {{if ne $subCat "MP4 Video"}}
-                                                    <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                                        <button data-toggle="tooltip" data-placement="top" title="Convert to MP4" onclick="convertToMP4({{$file.Name}})" type="button" class="btn btn-default" aria-label="Left Align">
-                                                            <span class="glyphicon glyphicon-cog" aria-label="Convert"></span>
-                                                            <!-- <span class="hidden-xs {{if eq $cat " Video" " Image"}}hidden-sm hidden-md{{end}}">To MP4</class> -->
-                                                        </button>
-                                                    </div>
-                                                {{end}}
-                                                <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                                    <button data-toggle="tooltip" data-placement="top" title="Play" onclick="watch({{$file.Name}})" type="button" class="btn btn-default" aria-label="Left Align">
-                                                        <span class="glyphicon glyphicon-play" aria-label="Play"></span>
-                                                        <!-- <span class="hidden-xs {{if eq $cat " Video" " Image"}}hidden-sm hidden-md{{end}}">Play</class> -->
-                                                    </button>
-                                                </div>
-                                            {{end}}
-                                            {{if eq $cat "Image"}}
-                                                <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                                    <button data-toggle="tooltip" data-placement="top" title="Preview" type="button" class="btn btn-default" aria-label="Left Align">
-                                                        <span class="glyphicon glyphicon-play" aria-label="Preview"></span>
-                                                        <!-- <span class="hidden-xs {{if eq $cat "Video" "Image"}}hidden-sm hidden-md{{end}}">Preview</class> -->
-                                                    </button>
-                                                </div>
-                                            {{end}}
-                                            <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                                <button data-toggle="tooltip" data-placement="top" title="Delete" onclick="deleteFile({{$file.Name}})" type="button" class="btn btn-default" aria-label="Left Align">
-                                                    <span class="glyphicon glyphicon-remove" aria-label="Delete"></span>
-                                                    <!-- <span class="hidden-xs {{if eq $cat "Video" "Image"}}hidden-sm hidden-md{{end}}">Delete</class> -->
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {{end}}
-                        </tbody>
-                    </table>
-                </div>
-            {{end}}
-        {{end}}
-    {{end}}
+<div class="sk-fading-circle">
+    <div class="sk-circle1 sk-circle"></div>
+    <div class="sk-circle2 sk-circle"></div>
+    <div class="sk-circle3 sk-circle"></div>
+    <div class="sk-circle4 sk-circle"></div>
+    <div class="sk-circle5 sk-circle"></div>
+    <div class="sk-circle6 sk-circle"></div>
+    <div class="sk-circle7 sk-circle"></div>
+    <div class="sk-circle8 sk-circle"></div>
+    <div class="sk-circle9 sk-circle"></div>
+    <div class="sk-circle10 sk-circle"></div>
+    <div class="sk-circle11 sk-circle"></div>
+    <div class="sk-circle12 sk-circle"></div>
 </div>
+
+<div class="container-fluid" id="files"></div>
 
 {{template "footer.html" .}}
