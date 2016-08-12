@@ -10,6 +10,10 @@ And then, one day, I realized it was 2016 and that my knowledge of `Go` was more
 
 So I developed **GophileManager**!
 
+## Note
+
+This is not a finished product. I'm only working on it in my free time. I am not responsible for the bad things that might happen to you while using it. Use at your own risks.
+
 ## Installation
 
 First, you have to clone the repository **inside your GOPATH**. Then, you can either directly run it using the revel CLI:
