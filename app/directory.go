@@ -11,7 +11,8 @@ import (
 
 // Types
 const Pages = "Pages document"
-const TAR = "Tar Archive"
+const TAR = "Tarball"
+const ZIP = "Zipball"
 const PDF = "PDF Document"
 const MP3 = "MP3 Audio"
 const OGG = "OGG Audio"
@@ -24,6 +25,7 @@ const DMG = "Apple Disk Image"
 const MKV = "Matroska High-Definition Video"
 const MP4 = "MP4 Video"
 const TXT = "Plain Text"
+const SRT = "Subtitle File"
 
 const Other = "Other"
 
@@ -52,6 +54,8 @@ func getKnownExt(ext string) *Type {
 	known := make(map[string]*Type)
 	known[".pages"] = &Type{Document, Pages}
 	known[".asd"] = &Type{Audio, ASD}
+	known[".srt"] = &Type{Document, SRT}
+	known[".txt"] = &Type{Document, TXT}
 	t := known[ext]
 	if t == nil {
 		return &Type{Other, ext}
@@ -67,6 +71,8 @@ func getKnownMime(mime string) *Type {
 	known_app["pdf"] = &Type{Document, PDF}
 	known_app["x-tar"] = &Type{Archive, TAR}
 	known_app["x-apple-diskimage"] = &Type{Program, DMG}
+	known_app["zip"] = &Type{Archive, ZIP}
+	known_app["x-subrip"] = &Type{Document, SRT}
 	known_audio := make(map[string]*Type)
 	known_audio["mpeg"] = &Type{Audio, MP3}
 	known_audio["mid"] = &Type{Audio, MIDI}

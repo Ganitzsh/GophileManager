@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/googollee/go-socket.io"
+
 	"gopkg.in/fsnotify.v1"
 )
 
@@ -17,6 +19,7 @@ type WebManager struct {
 	PWD        string
 	Categories map[Category]interface{}
 	Watcher    *fsnotify.Watcher
+	Server     *socketio.Server
 }
 
 func (wm WebManager) GetMainCategories() []string {
@@ -61,11 +64,26 @@ func watchDirActivity(watcher *fsnotify.Watcher) {
 }
 
 func NewWebManager() *WebManager {
+	server, err := socketio.NewServer(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	server.On("connection", func(so socketio.Socket) {
+		log.Println("on connection")
+		so.Join("notif")
+		so.On("disconnection", func() {
+			log.Println("on disconnect")
+		})
+	})
+	server.On("error", func(so socketio.Socket, err error) {
+		log.Println("error:", err)
+	})
 	return &WebManager{
 		Config:     &conf,
 		LoggedIn:   true,
 		Categories: make(map[Category]interface{}),
 		PWD:        conf.MainDir,
+		Server:     server,
 	}
 }
 

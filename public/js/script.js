@@ -1,13 +1,60 @@
-var busy
+var busy = 0
+var id = 0
+var socket
+
+window.onbeforeunload = function (e) {
+	if (busy != 0) {
+		return 'Operations in progress'
+	}
+	return nil
+};
+
 
 $(document)
 	.ready(function () {
-		$('[data-toggle="tooltip"]')
-			.tooltip()
 		$('.sk-fading-circle')
 			.hide()
 		fetchContent('current')
 	});
+
+function generateProgressAlert(text) {
+	return `
+	<div class="alert alert-info alert-dismissible" role="alert" id="alert-${id}">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		${text}
+		<div class="progress">
+				<div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%">
+				</div>
+		</div>
+	</div>
+	`
+}
+
+function generateAlert(type, text) {
+	return `
+	<div class="alert alert-${type} alert-dismissible" role="alert" id="alert-${id}">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		${text}
+	</div>
+	`
+}
+
+function newNotification(type, message) {
+	var alert
+	switch (type) {
+	case 'progress':
+		alert = generateProgressAlert(message)
+		break;
+	case 'done':
+		alert = generateDoneAlert(message)
+		break;
+	}
+	$('#notifications')
+		.append(alert)
+	id++
+	return '#alert-' + (id - 1)
+		.toString()
+}
 
 function loading() {
 	$('#files')
@@ -24,7 +71,7 @@ function doneLoading() {
 }
 
 function fetchContent(where) {
-	busy = true
+	busy++
 	var str = '/app/files/' + where
 	var uri = encodeURI(str)
 	loading()
@@ -41,12 +88,14 @@ function fetchContent(where) {
 							}, 'fast');
 						$('#files')
 							.html(html)
+						$('[data-toggle="tooltip"]')
+							.tooltip()
 						doneLoading()
+						busy--
 					});
 			} else {}
 		})
 		.catch(function (error) {});
-	busy = false
 }
 
 function watch(name) {
@@ -54,6 +103,7 @@ function watch(name) {
 }
 
 function convertToMP4(name) {
+	busy++
 	$('#progressModal')
 		.modal('show')
 	if (busy) {
@@ -62,7 +112,6 @@ function convertToMP4(name) {
 			.modal('hide')
 		return
 	}
-	busy = true
 	var str = '/app/convert/' + name
 	var uri = encodeURI(str)
 	fetch(uri, {
@@ -72,7 +121,8 @@ function convertToMP4(name) {
 			if (response.ok) {
 				response.json()
 					.then(function (json) {});
-				location.reload();
+				fetchContent('current')
+				busy--
 			} else {
 				$('#progressModal')
 					.modal('hide')
@@ -82,20 +132,12 @@ function convertToMP4(name) {
 			$('#progressModal')
 				.modal('hide')
 		});
-	busy = false
-
 }
 
 function deleteFile(name) {
 	bootbox.confirm("Delete <strong>" + name + "</strong>?", function (result) {
 		if (result) {
-			$('#progressModal')
-				.modal('show')
-			if (busy) {
-				console.log("Busy");
-				return
-			}
-			busy = true
+			busy++
 			var str = '/app/delete/' + name
 			var uri = encodeURI(str)
 			fetch(uri, {
@@ -103,25 +145,10 @@ function deleteFile(name) {
 				})
 				.then(function (response) {
 					if (response.ok) {
-						response.json()
-							.then(function (json) {
-								console.log(json);
-							});
-						location.reload();
-					} else {
-						response.json()
-							.then(function (json) {
-								console.log(json);
-							});
-						$('#progressModal')
-							.modal('hide')
-					}
+						fetchContent('current')
+					} else {}
 				})
-				.catch(function (error) {
-					$('#progressModal')
-						.modal('hide')
-				});
-			busy = false
+				.catch(function (error) {});
 		}
 	});
 }
@@ -150,13 +177,7 @@ function validateCompressionForm() {
 }
 
 function downloadFile(name) {
-	$('#progressModal')
-		.modal('show')
-	if (busy) {
-		console.log("Busy");
-		return
-	}
-	busy = true
+	busy++
 	var str = '/app/download/' + name
 	var uri = encodeURI(str)
 	console.log(uri);
@@ -169,31 +190,18 @@ function downloadFile(name) {
 				response.blob()
 					.then(function (blob) {
 						download(blob, name, mime)
-						console.log(name);
-						$('#progressModal')
-							.modal('hide')
+						busy--
 					});
-			} else {
-				response.json()
-					.then(function (json) {
-						console.log(json);
-					});
-				$('#progressModal')
-					.modal('hide')
-				console.log('Network response was not ok.');
-			}
+			} else {}
 		})
 		.catch(function (error) {
-			$('#progressModal')
-				.modal('hide')
 			console.log('There has been a problem with your fetch operation: ' + error.message);
 		});
-	busy = false
 }
 
 function compressAndDownload(name, target) {
-	$('#progressModal')
-		.modal('show')
+	var alertID = newNotification('progress', 'Compressing <strong>' + target + '</strong>')
+	console.log(alertID);
 	$('#fileName')
 		.text('')
 	$('#archiveFileName')
@@ -209,15 +217,19 @@ function compressAndDownload(name, target) {
 		})
 		.then(function (response) {
 			if (response.ok) {
-				response.blob()
-					.then(function (myBlob) {
-						// download(myBlob, name + '.tar', 'application/x-tar');
-						location.reload();
-					});
+				fetchContent('current')
+				$(alertID)
+					.replaceWith(generateAlert('success', `<strong>${target}</strong> commpressed successfully!`))
 			} else {
-				$('#progressModal')
-					.modal('hide')
-				console.log('Network response was not ok.');
+				response.json()
+					.then(function (error) {
+						console.log(error);
+						$(alertID)
+							.replaceWith(generateAlert('danger',
+								`<p>Compression failed for <strong>${target}</strong></p>
+								<p><strong>Cause:</strong> ${error.message}</p>`
+							))
+					})
 			}
 		})
 		.catch(function (error) {

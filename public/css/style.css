@@ -22,6 +22,27 @@ td .tooltip {
     overflow     : hidden;
     text-overflow: ellipsis;
 }
+
+#notifications {
+    position: fixed;
+    z-index : 2200;
+    top     : 1%;
+    right   : 1%;
+    width   : 30%;
+}
+
+#notifications .alert {
+    opacity: 0.5;
+}
+
+#notifications .alert .progress {
+    margin-bottom: 0;
+    margin-top   : 10px;
+}
+
+#notifications .alert:hover {
+    opacity: 1;
+}
 /*
 
 Loader
