@@ -7,12 +7,10 @@ window.onbeforeunload = function (e) {
 	return nil
 };
 
-
 $(document)
 	.ready(function () {
 		socket = io('http://localhost:9000');
 		socket.on('notif action done', function (v) {
-			console.log(v);
 			$('#' + v.alert)
 				.remove()
 			newNotification('done', v.message)
@@ -21,7 +19,6 @@ $(document)
 			}
 		})
 		socket.on('notif action error', function (v) {
-			console.log(v);
 			$('#' + v.alert)
 				.remove()
 			newNotification('error', v.message)

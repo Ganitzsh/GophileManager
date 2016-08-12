@@ -20,13 +20,28 @@ func init() {
 		revel.ValidationFilter,        // Restore kept validation errors and save new ones from cookie.
 		revel.I18nFilter,              // Resolve the requested language
 		HeaderFilter,                  // Add some security based headers
-		revel.InterceptorFilter,       // Run interceptors around the action.
-		revel.CompressFilter,          // Compress the result.
-		revel.ActionInvoker,           // Invoke the action.
+		CORSFilter,
+		revel.InterceptorFilter, // Run interceptors around the action.
+		revel.CompressFilter,    // Compress the result.
+		revel.ActionInvoker,     // Invoke the action.
 	}
 
 	revel.OnAppStart(InitAppConfig)
 	revel.OnAppStart(InitApp)
+}
+
+var CORSFilter = func(c *revel.Controller, fc []revel.Filter) {
+	c.Response.Out.Header().Set("Access-Control-Allow-Origin", "*")
+	c.Response.Out.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	c.Response.Out.Header().Set("Access-Control-Allow-Headers",
+		"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+
+	// Stop here for a Preflighted OPTIONS request.
+	if c.Request.Method == "OPTIONS" {
+		return
+	}
+
+	fc[0](c, fc[1:]) // Execute the next filter stage.
 }
 
 // TODO turn this into revel.HeaderFilter
