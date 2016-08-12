@@ -129,6 +129,7 @@ func NewWebManager() *WebManager {
 		RevelHandle: revel.Server.Handler,
 		Trash:       conf.Trash,
 		CanConvert:  ffmpegInstalled,
+		Host:        conf.Host,
 	}
 }
 
