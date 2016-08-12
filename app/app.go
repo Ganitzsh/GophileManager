@@ -26,13 +26,14 @@ type WebManager struct {
 	RevelHandle http.Handler
 	Trash       bool
 	CanConvert  bool
+	Host        string
 }
 
 func handle(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	if strings.HasPrefix(path, "/socket.io/") {
 		w.Header().Add("Access-Control-Allow-Credentials", "true")
-		w.Header().Add("Access-Control-Allow-Origin", "http://"+r.Host)
+		w.Header().Add("Access-Control-Allow-Origin", Context.Host)
 		w.Header().Add("Access-Control-Allow-Methods",
 			"POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Add("Access-Control-Allow-Headers",
