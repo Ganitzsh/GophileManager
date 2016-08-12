@@ -84,8 +84,8 @@ func (c App) Delete() revel.Result {
 func (c App) GetFiles() revel.Result {
 	tmp := c.Params.Get("dir")
 	path := c.Session["pwd"]
-	if c.Session["pwd"] == "" {
-		c.Session["pwd"] = app.Context.Config.MainDir
+	if path == "" {
+		path = app.Context.Config.MainDir
 	}
 	if tmp != "" {
 		if tmp == "up" && c.Session["pwd"] != app.Context.Config.MainDir {
