@@ -208,15 +208,18 @@ func (c App) GetFiles() revel.Result {
 	case "current":
 		path = path
 	case "up":
+		log.Println("PWD (!):", path)
 		isAllowed := strings.HasPrefix(path, app.Context.Config.MainDir)
-		if c.Session["pwd"] != app.Context.Config.MainDir && isAllowed {
-			path = filepath.Dir(c.Session["pwd"])
+		log.Println("Allowed:", isAllowed)
+		if path != app.Context.Config.MainDir && isAllowed {
+			path = filepath.Dir(path)
 		} else {
 			path = app.Context.Config.MainDir
 		}
 	default:
 		path += "/" + tmp
 	}
+	log.Println("PWD Final:", path)
 	content, err := app.ProcessDir(path)
 	if err != nil {
 		app.Context.SocketIO.BroadcastTo("notif", "notif action error", map[string]interface{}{
