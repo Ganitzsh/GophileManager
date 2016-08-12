@@ -1,4 +1,4 @@
-<button onclick="fetchContent('up')" class="btn btn-default" type="button" {{if eq .isRoot true}}disabled="disabled"{{end}}>
+<button onclick="fetchContent('up')" class="btn btn-default" type="button" {{if eq .isRoot true}}disabled="disabled" {{end}}>
     <span class="glyphicon glyphicon-chevron-left"></span>
 </button>
 {{range $cat, $content := .content}}
@@ -12,12 +12,12 @@
         {{range $dir := $content}}
         <tr>
             <td>
-                <a href="#">{{$dir.Name}}</a>
+                <a onclick="fetchContent({{$dir.Name}})" href="#">{{$dir.Name}}</a>
             </td>
             <td>
                 <div class="btn-group btn-group-justified" role="group">
                     <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                        <button href="/app/{{$dir.Name}}" data-toggle="tooltip" data-placement="top" title="Go To" onclick="fetchContent({{$dir.Name}})" type="button" class="btn btn-default" data-toggle="modal" data-target="#archiveName">
+                        <button data-toggle="tooltip" data-placement="top" title="Go To" onclick="fetchContent({{$dir.Name}})" type="button" class="btn btn-default" data-toggle="modal" data-target="#archiveName">
                             <span class="glyphicon glyphicon-share-alt" aria-label="Go To"></span>
                             <!-- <span class="hidden-xs">Go to</class> -->
                             </buton>
