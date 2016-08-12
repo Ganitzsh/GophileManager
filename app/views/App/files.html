@@ -1,6 +1,9 @@
 <button onclick="fetchContent('up')" class="btn btn-default" type="button" {{if eq .isRoot true}}disabled="disabled" {{end}}>
     <span class="glyphicon glyphicon-chevron-left"></span>
 </button>
+<button onclick="fetchContent('current')" class="btn btn-default" type="button">
+    <span class="glyphicon glyphicon-repeat"></span>
+</button>
 {{range $cat, $content := .content}}
 <h3>{{ $cat }}</h3> {{if eq $cat "Directory"}}
 <div class="table-responsive">

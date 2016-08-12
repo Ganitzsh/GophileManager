@@ -5,7 +5,6 @@ import (
 	"log"
 	"mime"
 	"path/filepath"
-	"reflect"
 	"strings"
 )
 
@@ -170,23 +169,23 @@ func ProcessDir(dir string) (map[Category]interface{}, error) {
 		}
 	}
 	// Print debug
-	for cat, entity := range tmp {
-		log.Println(cat)
-		t := reflect.TypeOf(entity)
-		if t.Kind() == reflect.Map { // If sub-cat
-			subCats := entity.(map[string][]*File)
-			for subCat, files := range subCats { // List sub-cat files
-				log.Println("\t", subCat)
-				for _, file := range files {
-					log.Println("\t\t", file.Name)
-				}
-			}
-		} else { // List files
-			files := entity.([]*File)
-			for _, file := range files {
-				log.Println("\t", file.Name)
-			}
-		}
-	}
+	// for cat, entity := range tmp {
+	// 	log.Println(cat)
+	// 	t := reflect.TypeOf(entity)
+	// 	if t.Kind() == reflect.Map { // If sub-cat
+	// 		subCats := entity.(map[string][]*File)
+	// 		for subCat, files := range subCats { // List sub-cat files
+	// 			log.Println("\t", subCat)
+	// 			for _, file := range files {
+	// 				log.Println("\t\t", file.Name)
+	// 			}
+	// 		}
+	// 	} else { // List files
+	// 		files := entity.([]*File)
+	// 		for _, file := range files {
+	// 			log.Println("\t", file.Name)
+	// 		}
+	// 	}
+	// }
 	return tmp, nil
 }

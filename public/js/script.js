@@ -1,25 +1,42 @@
-var busy = 0
-var id = 0
 var socket
 
 window.onbeforeunload = function (e) {
-	if (busy != 0) {
-		return 'Operations in progress'
-	}
+	// if (id > 1) {
+	// 	return 'Operations in progress'
+	// }
 	return nil
 };
 
 
 $(document)
 	.ready(function () {
+		socket = io('http://localhost:9000');
+		socket.on('notif action done', function (v) {
+			console.log(v);
+			$('#' + v.alert)
+				.remove()
+			newNotification('done', v.message)
+			if (v.reload) {
+				fetchContent('current')
+			}
+		})
+		socket.on('notif action error', function (v) {
+			console.log(v);
+			$('#' + v.alert)
+				.remove()
+			newNotification('error', v.message)
+			if (v.reload) {
+				fetchContent('current')
+			}
+		})
 		$('.sk-fading-circle')
 			.hide()
 		fetchContent('current')
 	});
 
-function generateProgressAlert(text) {
+function generateProgressAlert(text, id) {
 	return `
-	<div class="alert alert-info alert-dismissible" role="alert" id="alert-${id}">
+	<div class="alert alert-info alert-dismissible" role="alert" id="${id}">
 		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		${text}
 		<div class="progress">
@@ -30,9 +47,9 @@ function generateProgressAlert(text) {
 	`
 }
 
-function generateAlert(type, text) {
+function generateAlert(type, text, id) {
 	return `
-	<div class="alert alert-${type} alert-dismissible" role="alert" id="alert-${id}">
+	<div class="alert alert-${type} alert-dismissible" role="alert" id="${id}">
 		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		${text}
 	</div>
@@ -41,19 +58,24 @@ function generateAlert(type, text) {
 
 function newNotification(type, message) {
 	var alert
+
+	var uuid = UUID.generate()
+	var domID = 'alert-' + uuid
 	switch (type) {
 	case 'progress':
-		alert = generateProgressAlert(message)
+		alert = generateProgressAlert(message, domID)
 		break;
 	case 'done':
-		alert = generateDoneAlert(message)
+		alert = generateAlert('success', message, domID)
+		break;
+	case 'error':
+		alert = generateAlert('danger', message, domID)
 		break;
 	}
 	$('#notifications')
 		.append(alert)
-	id++
-	return '#alert-' + (id - 1)
-		.toString()
+	console.log(domID);
+	return domID
 }
 
 function loading() {
@@ -70,8 +92,18 @@ function doneLoading() {
 		.hide();
 }
 
+function reloadFiles(newFiles) {
+	$('html, body')
+		.animate({
+			scrollTop: 0
+		}, 'fast');
+	$('#files')
+		.html(newFiles)
+	$('[data-toggle="tooltip"]')
+		.tooltip()
+}
+
 function fetchContent(where) {
-	busy++
 	var str = '/app/files/' + where
 	var uri = encodeURI(str)
 	loading()
@@ -82,16 +114,8 @@ function fetchContent(where) {
 			if (response.ok) {
 				response.text()
 					.then(function (html) {
-						$('html, body')
-							.animate({
-								scrollTop: 0
-							}, 'fast');
-						$('#files')
-							.html(html)
-						$('[data-toggle="tooltip"]')
-							.tooltip()
+						reloadFiles(html)
 						doneLoading()
-						busy--
 					});
 			} else {}
 		})
@@ -103,54 +127,69 @@ function watch(name) {
 }
 
 function convertToMP4(name) {
-	busy++
-	$('#progressModal')
-		.modal('show')
-	if (busy) {
-		console.log("Busy");
-		$('#progressModal')
-			.modal('hide')
-		return
-	}
-	var str = '/app/convert/' + name
-	var uri = encodeURI(str)
-	fetch(uri, {
-			credentials: 'same-origin'
-		})
-		.then(function (response) {
-			if (response.ok) {
-				response.json()
-					.then(function (json) {});
-				fetchContent('current')
-				busy--
-			} else {
-				$('#progressModal')
-					.modal('hide')
-			}
-		})
-		.catch(function (error) {
-			$('#progressModal')
-				.modal('hide')
-		});
-}
-
-function deleteFile(name) {
-	bootbox.confirm("Delete <strong>" + name + "</strong>?", function (result) {
+	bootbox.confirm("Convert <strong>" + name + "</strong> to MP4?", function (result) {
 		if (result) {
-			busy++
-			var str = '/app/delete/' + name
+			var alertID = newNotification('progress', 'Compressing <strong>' + target + '</strong>')
+			var str = '/app/convert/' + name
+			str += '?alert_id=' + alertID
 			var uri = encodeURI(str)
 			fetch(uri, {
 					credentials: 'same-origin'
 				})
 				.then(function (response) {
-					if (response.ok) {
-						fetchContent('current')
-					} else {}
+					if (response.ok) {} else {}
 				})
 				.catch(function (error) {});
 		}
-	});
+	})
+}
+
+function deleteFile(name) {
+	bootbox.confirm("<h3>Warning!</h3><p>Delete <strong>" + name + "</strong>?</p>", function (result) {
+		if (result) {
+			var alertID = newNotification('progress', 'Deleting <strong>' + name + '</strong>')
+			var str = '/app/delete/' + name
+			str += '?alert_id=' + alertID
+			var uri = encodeURI(str)
+			fetch(uri, {
+					credentials: 'same-origin'
+				})
+				.then(function (response) {
+					if (response.ok) {} else {}
+				})
+				.catch(function (error) {});
+		}
+	})
+}
+
+function downloadFile(name) {
+	var str = '/app/download/' + name
+	var uri = encodeURI(str)
+	console.log(uri);
+	fetch(uri, {
+			credentials: 'same-origin'
+		})
+		.then(function (response) {
+			if (response.ok) {
+				var mime = response.headers.get('Content-Type')
+				response.blob()
+					.then(function (blob) {
+						download(blob, name, mime)
+					});
+			} else {}
+		})
+		.catch(function (error) {
+			console.log('There has been a problem with your fetch operation: ' + error.message);
+		});
+}
+
+function resetMyModal() {
+	$('#fileName')
+		.text('')
+	$('#archiveFileName')
+		.val('')
+	$('#myModal')
+		.modal('hide')
 }
 
 function setToCompress(name) {
@@ -176,65 +215,17 @@ function validateCompressionForm() {
 	}
 }
 
-function downloadFile(name) {
-	busy++
-	var str = '/app/download/' + name
-	var uri = encodeURI(str)
-	console.log(uri);
-	fetch(uri, {
-			credentials: 'same-origin'
-		})
-		.then(function (response) {
-			if (response.ok) {
-				var mime = response.headers.get('Content-Type')
-				response.blob()
-					.then(function (blob) {
-						download(blob, name, mime)
-						busy--
-					});
-			} else {}
-		})
-		.catch(function (error) {
-			console.log('There has been a problem with your fetch operation: ' + error.message);
-		});
-}
-
 function compressAndDownload(name, target) {
-	var alertID = newNotification('progress', 'Compressing <strong>' + target + '</strong>')
-	console.log(alertID);
-	$('#fileName')
-		.text('')
-	$('#archiveFileName')
-		.val('')
-	$('#myModal')
-		.modal('hide')
-	console.log(name + ' - ' + target);
+	var alertID = newNotification('progress', 'Compressing <strong>' + target + '</strong>', target)
+	resetMyModal()
 	var str = '/app/compress/' + target + '/name/' + name
+	str += '?alert_id=' + alertID
 	var uri = encodeURI(str)
-	console.log(uri);
 	fetch(uri, {
 			credentials: 'same-origin'
 		})
 		.then(function (response) {
-			if (response.ok) {
-				fetchContent('current')
-				$(alertID)
-					.replaceWith(generateAlert('success', `<strong>${target}</strong> commpressed successfully!`))
-			} else {
-				response.json()
-					.then(function (error) {
-						console.log(error);
-						$(alertID)
-							.replaceWith(generateAlert('danger',
-								`<p>Compression failed for <strong>${target}</strong></p>
-								<p><strong>Cause:</strong> ${error.message}</p>`
-							))
-					})
-			}
+			if (response.ok) {} else {}
 		})
-		.catch(function (error) {
-			$('#progressModal')
-				.modal('hide')
-			console.log('There has been a problem with your fetch operation: ' + error.message);
-		});
+		.catch(function (error) {});
 }

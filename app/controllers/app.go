@@ -45,16 +45,30 @@ func (c App) Index() revel.Result {
 }
 
 func (c App) Compress() revel.Result {
+	reload := false
+	oldPwd := c.Session["pwd"]
 	name := c.Params.Get("name")
 	file := c.Params.Get("target")
 	target := c.Session["pwd"]
 	_, err := app.CreateArchive(target+"/"+file, target, name)
 	if err != nil {
+		app.Context.SocketIO.BroadcastTo("notif", "notif action error", map[string]interface{}{
+			"message": "<strong>" + file + "</strong> commpression error:<br/>" + err.Error(),
+			"alert":   c.Params.Get("alert_id"),
+			"reload":  reload,
+		})
 		c.Response.Status = http.StatusBadRequest
 		return c.RenderJson(map[string]interface{}{
 			"message": err.Error(),
 		})
 	}
+	log.Println("After compression:", c.Session["pwd"])
+	reload = c.Session["pwd"] == oldPwd
+	app.Context.SocketIO.BroadcastTo("notif", "notif action done", map[string]interface{}{
+		"message": "<strong>" + file + "</strong> commpressed successfully!",
+		"alert":   c.Params.Get("alert_id"),
+		"reload":  reload,
+	})
 	return c.RenderJson(map[string]interface{}{
 		"message": "Success!",
 	})
@@ -69,17 +83,29 @@ func (c App) Compress() revel.Result {
 }
 
 func (c App) Delete() revel.Result {
-	log.Println("PWD (Delete):", c.Session["pwd"])
+	reload := false
+	oldPwd := c.Session["pwd"]
 	file := c.Params.Get("target")
 	fPath := c.Session["pwd"] + "/" + file
 	if err := os.Remove(fPath); err != nil {
+		app.Context.SocketIO.BroadcastTo("notif", "notif action error", map[string]interface{}{
+			"message": "<strong>" + file + "</strong> could not be deleted:<br?/>" + err.Error(),
+			"alert":   c.Params.Get("alert_id"),
+			"reload":  reload,
+		})
 		c.Response.Status = http.StatusBadRequest
 		return c.RenderJson(map[string]interface{}{
 			"message": err.Error(),
 			"status":  http.StatusBadRequest,
 		})
 	}
+	reload = (c.Session["pwd"] == oldPwd)
 	time.Sleep(1 * time.Second)
+	app.Context.SocketIO.BroadcastTo("notif", "notif action done", map[string]interface{}{
+		"message": "<strong>" + file + "</strong> deleted successfully!",
+		"alert":   c.Params.Get("alert_id"),
+		"reload":  reload,
+	})
 	return c.RenderJson(map[string]interface{}{
 		"message": "Deleted successfuly",
 		"status":  http.StatusOK,
@@ -108,9 +134,8 @@ func (c App) GetFiles() revel.Result {
 	}
 	c.Session["pwd"] = path
 	c.RenderArgs["isRoot"] = (path == app.Context.Config.MainDir)
-	log.Println(c.RenderArgs["isRoot"])
 	c.RenderArgs["content"] = content
-	log.Println("PWD:", c.Session["pwd"])
+	log.Println("New PWD:", c.Session["pwd"])
 	return c.RenderTemplate("App/files.html")
 }
 

@@ -2,11 +2,13 @@ package app
 
 import (
 	"log"
+	"net/http"
 	"reflect"
 	"sort"
 	"strings"
 
 	"github.com/googollee/go-socket.io"
+	"github.com/revel/revel"
 
 	"gopkg.in/fsnotify.v1"
 )
@@ -14,12 +16,22 @@ import (
 type Category string
 
 type WebManager struct {
-	Config     *AppConfig
-	LoggedIn   bool
-	PWD        string
-	Categories map[Category]interface{}
-	Watcher    *fsnotify.Watcher
-	Server     *socketio.Server
+	Config      *AppConfig
+	LoggedIn    bool
+	PWD         string
+	Categories  map[Category]interface{}
+	Watcher     *fsnotify.Watcher
+	SocketIO    *socketio.Server
+	RevelHandle http.Handler
+}
+
+func handle(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	if strings.HasPrefix(path, "/socket.io/") {
+		Context.SocketIO.ServeHTTP(w, r)
+	} else {
+		Context.RevelHandle.ServeHTTP(w, r)
+	}
 }
 
 func (wm WebManager) GetMainCategories() []string {
@@ -69,21 +81,22 @@ func NewWebManager() *WebManager {
 		log.Fatal(err)
 	}
 	server.On("connection", func(so socketio.Socket) {
-		log.Println("on connection")
+		log.Println("Client connected")
 		so.Join("notif")
 		so.On("disconnection", func() {
-			log.Println("on disconnect")
+			log.Println("Client disconnected")
 		})
 	})
 	server.On("error", func(so socketio.Socket, err error) {
 		log.Println("error:", err)
 	})
 	return &WebManager{
-		Config:     &conf,
-		LoggedIn:   true,
-		Categories: make(map[Category]interface{}),
-		PWD:        conf.MainDir,
-		Server:     server,
+		Config:      &conf,
+		LoggedIn:    true,
+		Categories:  make(map[Category]interface{}),
+		PWD:         conf.MainDir,
+		SocketIO:    server,
+		RevelHandle: revel.Server.Handler,
 	}
 }
 
@@ -101,4 +114,5 @@ func NewWatcher(dir string) {
 
 func InitApp() {
 	Context = NewWebManager()
+	revel.Server.Handler = http.HandlerFunc(handle)
 }
