@@ -23,7 +23,7 @@ func InitAppConfig() {
 	if !set {
 		log.Fatal("No host set")
 	}
-	if !strings.HasPrefix(h, "http://") || !strings.HasPrefix(h, "https://") {
+	if !(strings.HasPrefix(h, "http://") || strings.HasPrefix(h, "https://")) {
 		log.Fatal("Invalid host format")
 	}
 	t, trash := revel.Config.String("app.trash_dir")
@@ -31,4 +31,5 @@ func InitAppConfig() {
 		log.Println("WARNING: Trash disabled")
 	}
 	conf = AppConfig{d, t, trash, h}
+	log.Println(conf)
 }
