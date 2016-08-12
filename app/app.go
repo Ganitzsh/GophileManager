@@ -2,9 +2,13 @@ package app
 
 import (
 	"log"
+	"net/http"
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/googollee/go-socket.io"
+	"github.com/revel/revel"
 
 	"gopkg.in/fsnotify.v1"
 )
@@ -12,10 +16,22 @@ import (
 type Category string
 
 type WebManager struct {
-	Config     *AppConfig
-	LoggedIn   bool
-	Categories map[Category]interface{}
-	Watcher    *fsnotify.Watcher
+	Config      *AppConfig
+	LoggedIn    bool
+	PWD         string
+	Categories  map[Category]interface{}
+	Watcher     *fsnotify.Watcher
+	SocketIO    *socketio.Server
+	RevelHandle http.Handler
+}
+
+func handle(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	if strings.HasPrefix(path, "/socket.io/") {
+		Context.SocketIO.ServeHTTP(w, r)
+	} else {
+		Context.RevelHandle.ServeHTTP(w, r)
+	}
 }
 
 func (wm WebManager) GetMainCategories() []string {
@@ -46,40 +62,57 @@ func (wm WebManager) GetSubCategories(main string) []string {
 	return c
 }
 
-func watchDirActivity() {
+func watchDirActivity(watcher *fsnotify.Watcher) {
 	for {
 		select {
-		case ev := <-Context.Watcher.Events:
+		case ev := <-watcher.Events:
 			if ev.Op != fsnotify.Write {
 				log.Println("event:", ev)
-				Context.Categories = make(map[Category]interface{})
-				ProcessDir(Context.Config.MainDir)
 			}
-		case err := <-Context.Watcher.Errors:
+		case err := <-watcher.Errors:
 			log.Println("error:", err)
 		}
 	}
 }
 
 func NewWebManager() *WebManager {
+	server, err := socketio.NewServer(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	server.On("connection", func(so socketio.Socket) {
+		log.Println("Client connected")
+		so.Join("notif")
+		so.On("disconnection", func() {
+			log.Println("Client disconnected")
+		})
+	})
+	server.On("error", func(so socketio.Socket, err error) {
+		log.Println("error:", err)
+	})
 	return &WebManager{
-		Config:     &conf,
-		LoggedIn:   true,
-		Categories: make(map[Category]interface{}),
+		Config:      &conf,
+		LoggedIn:    true,
+		Categories:  make(map[Category]interface{}),
+		PWD:         conf.MainDir,
+		SocketIO:    server,
+		RevelHandle: revel.Server.Handler,
+	}
+}
+
+func NewWatcher(dir string) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	go watchDirActivity(watcher)
+	err = Context.Watcher.Add(dir)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
 func InitApp() {
 	Context = NewWebManager()
-	ProcessDir(Context.Config.MainDir)
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
-	}
-	Context.Watcher = watcher
-	go watchDirActivity()
-	err = Context.Watcher.Add(Context.Config.MainDir)
-	if err != nil {
-		log.Fatal(err)
-	}
+	revel.Server.Handler = http.HandlerFunc(handle)
 }

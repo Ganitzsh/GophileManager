@@ -5,13 +5,13 @@ import (
 	"log"
 	"mime"
 	"path/filepath"
-	"reflect"
 	"strings"
 )
 
 // Types
 const Pages = "Pages document"
-const TAR = "Tar Archive"
+const TAR = "Tarball"
+const ZIP = "Zipball"
 const PDF = "PDF Document"
 const MP3 = "MP3 Audio"
 const OGG = "OGG Audio"
@@ -20,6 +20,11 @@ const MIDI = "MIDI Synth Audio"
 const WAV = "WAV Audio"
 const ASD = "Ableton Analysis File"
 const AVI = "AVI Video"
+const DMG = "Apple Disk Image"
+const MKV = "Matroska High-Definition Video"
+const MP4 = "MP4 Video"
+const TXT = "Plain Text"
+const SRT = "Subtitle File"
 
 const Other = "Other"
 
@@ -29,6 +34,7 @@ const Document = "Document"
 const Archive = "Archive"
 const Audio = "Audio"
 const Video = "Video"
+const Program = "Program"
 
 type Type struct {
 	Cat  Category
@@ -47,6 +53,8 @@ func getKnownExt(ext string) *Type {
 	known := make(map[string]*Type)
 	known[".pages"] = &Type{Document, Pages}
 	known[".asd"] = &Type{Audio, ASD}
+	known[".srt"] = &Type{Document, SRT}
+	known[".txt"] = &Type{Document, TXT}
 	t := known[ext]
 	if t == nil {
 		return &Type{Other, ext}
@@ -61,6 +69,9 @@ func getKnownMime(mime string) *Type {
 	known_app := make(map[string]*Type)
 	known_app["pdf"] = &Type{Document, PDF}
 	known_app["x-tar"] = &Type{Archive, TAR}
+	known_app["x-apple-diskimage"] = &Type{Program, DMG}
+	known_app["zip"] = &Type{Archive, ZIP}
+	known_app["x-subrip"] = &Type{Document, SRT}
 	known_audio := make(map[string]*Type)
 	known_audio["mpeg"] = &Type{Audio, MP3}
 	known_audio["mid"] = &Type{Audio, MIDI}
@@ -69,6 +80,8 @@ func getKnownMime(mime string) *Type {
 	known_audio["ogg"] = &Type{Audio, OGG}
 	known_video := make(map[string]*Type)
 	known_video["x-msvideo"] = &Type{Video, AVI}
+	known_video["x-matroska"] = &Type{Video, MKV}
+	known_video["mp4"] = &Type{Video, MP4}
 	switch s[0] {
 	case "application":
 		t = known_app[s[1]]
@@ -105,11 +118,11 @@ func cleanName(fp string) string {
 	return c
 }
 
-func ProcessDir(dir string) error {
-	log.Println(Context.LoggedIn)
-	files, err := ioutil.ReadDir(Context.Config.MainDir)
+func ProcessDir(dir string) (map[Category]interface{}, error) {
+	tmp := make(map[Category]interface{})
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, file := range files {
 		var f *File
@@ -121,8 +134,8 @@ func ProcessDir(dir string) error {
 			log.Println("Skipping ", cleanedName)
 		} else {
 			if file.IsDir() {
-				if Context.Categories[Dir] == nil {
-					Context.Categories[Dir] = make([]*File, 0)
+				if tmp[Dir] == nil {
+					tmp[Dir] = make([]*File, 0)
 				}
 				f = &File{
 					Name:     file.Name(),
@@ -130,7 +143,7 @@ func ProcessDir(dir string) error {
 					Type:     nil,
 					Category: Dir,
 				}
-				Context.Categories[Dir] = append(Context.Categories[Dir].([]*File), f)
+				tmp[Dir] = append(tmp[Dir].([]*File), f)
 			} else {
 				t = getKnownType(cleanedName)
 				f = &File{
@@ -140,10 +153,10 @@ func ProcessDir(dir string) error {
 					Category: t.Cat,
 				}
 				if t.Type != "" {
-					ptr := Context.Categories[t.Cat]
+					ptr := tmp[t.Cat]
 					if ptr == nil { // IF doesn't exist
-						Context.Categories[t.Cat] = make(map[string][]*File, 0)
-						ptr = Context.Categories[t.Cat]
+						tmp[t.Cat] = make(map[string][]*File, 0)
+						ptr = tmp[t.Cat]
 					}
 					subCat := ptr.(map[string][]*File)
 					subCatPtr := subCat[t.Type]
@@ -155,24 +168,24 @@ func ProcessDir(dir string) error {
 			}
 		}
 	}
-	for cat, entity := range Context.Categories {
-		log.Println(cat)
-		t := reflect.TypeOf(entity)
-		if t.Kind() == reflect.Map { // If sub-cat
-			subCats := entity.(map[string][]*File)
-			for subCat, files := range subCats { // List sub-cat files
-				log.Println("   ", subCat)
-				for _, file := range files {
-					log.Println("      ", file.Name)
-				}
-			}
-		} else { // List files
-			files := entity.([]*File)
-			for _, file := range files {
-				log.Println("   ", file.Name)
-			}
-		}
-	}
-	Context.LoggedIn = false
-	return nil
+	// Print debug
+	// for cat, entity := range tmp {
+	// 	log.Println(cat)
+	// 	t := reflect.TypeOf(entity)
+	// 	if t.Kind() == reflect.Map { // If sub-cat
+	// 		subCats := entity.(map[string][]*File)
+	// 		for subCat, files := range subCats { // List sub-cat files
+	// 			log.Println("\t", subCat)
+	// 			for _, file := range files {
+	// 				log.Println("\t\t", file.Name)
+	// 			}
+	// 		}
+	// 	} else { // List files
+	// 		files := entity.([]*File)
+	// 		for _, file := range files {
+	// 			log.Println("\t", file.Name)
+	// 		}
+	// 	}
+	// }
+	return tmp, nil
 }
