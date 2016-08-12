@@ -220,6 +220,7 @@ func (c App) GetFiles() revel.Result {
 		path += "/" + tmp
 	}
 	log.Println("PWD Final:", path)
+	c.Session["pwd"] = path
 	content, err := app.ProcessDir(path)
 	if err != nil {
 		app.Context.SocketIO.BroadcastTo("notif", "notif action error", map[string]interface{}{
@@ -243,7 +244,6 @@ func (c App) GetFiles() revel.Result {
 	c.RenderArgs["isTrash"] = (path == app.Context.Config.TrashDir)
 	c.RenderArgs["trashCount"] = trashCount
 	c.RenderArgs["empty"] = (len(content) == 0)
-	c.Session["pwd"] = path
 	c.RenderArgs["isRoot"] = (path == app.Context.Config.MainDir)
 	c.RenderArgs["content"] = content
 	return c.RenderTemplate("App/files.html")
