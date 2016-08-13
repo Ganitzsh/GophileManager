@@ -10,9 +10,15 @@ And then, one day, I realized it was 2016 and that my knowledge of `Go` was more
 
 So I developed **GophileManager**!
 
-## Note
+You can try it here: [Demo](http://62.210.252.91:9001/app)
+
+**NOTE:** This demo contains placeholders for the most.
+
+## Security note
 
 This is not a finished product. I'm only working on it in my free time. I am not responsible for the bad things that might happen to you while using it. Use at your own risks.
+
+You can use the `SSL` protocol with this app, to do so follow the instructions here: [Revel conf doc](https://revel.github.io/manual/appconf.html)
 
 ## Installation
 
