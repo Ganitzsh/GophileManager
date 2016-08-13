@@ -180,6 +180,7 @@ func (c App) Delete() revel.Result {
 }
 
 func (c App) GetFiles() revel.Result {
+	var trashCount uint64
 	tmp := c.Params.Get("dir")
 	path := c.Session["pwd"]
 
@@ -233,13 +234,15 @@ func (c App) GetFiles() revel.Result {
 			"status":  http.StatusBadRequest,
 		})
 	}
-	trashCount, err := app.CountFilesInDir(app.Context.Config.TrashDir)
-	if err != nil {
-		app.Context.SocketIO.BroadcastTo("notif", "notif action error", map[string]interface{}{
-			"message": "Could not access trash: " + err.Error(),
-			"alert":   c.Params.Get("alert_id"),
-			"reload":  false,
-		})
+	if app.Context.Trash {
+		trashCount, err = app.CountFilesInDir(app.Context.Config.TrashDir)
+		if err != nil {
+			app.Context.SocketIO.BroadcastTo("notif", "notif action error", map[string]interface{}{
+				"message": "Could not access trash: " + err.Error(),
+				"alert":   c.Params.Get("alert_id"),
+				"reload":  false,
+			})
+		}
 	}
 	c.RenderArgs["isTrash"] = (path == app.Context.Config.TrashDir)
 	c.RenderArgs["trashCount"] = trashCount
