@@ -25,14 +25,14 @@ You can use the `SSL` protocol with this app, to do so follow the instructions h
 First, you have to clone the repository **inside your GOPATH**. Then, you can either directly run it using the revel CLI:
 
 ```shell
-revel run github.com/ganitzsh/WebManager <run_mod> # prod or dev
+revel run github.com/ganitzsh/GophileManager <run_mod> # prod or dev
 ```
 
 Or you can build it with:
 
 ```shell
 # target_dir is the directory where to put the built files
-revel build github.com/ganitzsh/WebManager <target_dir> <run_mode>
+revel build github.com/ganitzsh/GophileManager <target_dir> <run_mode>
 ```
 
 Then, you'll have to run the app using the `run.sh` script inside the freshly created `<target_dir>` and you should be ready to configure!
@@ -45,7 +45,7 @@ In order to fully experience the greatness of **GophileManager**, the `app.conf`
 
 If you run the app directly from the cloned repository, you'll find this file in `<repo>/confing/app.conf`.
 
-If you chose to build the app, you can find it in `<target_dir>/src/github.com/ganitzsh/WebManager/conf`
+If you chose to build the app, you can find it in `<target_dir>/src/github.com/ganitzsh/GophileManager/conf`
 
 Open it with your beloved text editor and find the following part:
 
