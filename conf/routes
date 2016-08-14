@@ -12,7 +12,7 @@ GET     /app/trash/empty                        App.EmptyTrash
 GET     /app/files/:dir                         App.GetFiles
 GET     /app/download/:target                   App.Download
 GET     /app/watch/:target                      App.Video
-GET     /app/file/:target                       App.Serve
+GET     /app/file/*filepath                     App.Serve
 GET     /app/convert/:target                    App.Convert
 
 # Ignore favicon requests

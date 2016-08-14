@@ -25,10 +25,10 @@ func (c App) Check() revel.Result {
 	return c.Redirect("/app")
 }
 
-func (c App) Serve(prefix, filepath string) revel.Result {
-	file := c.Params.Get("target")
-	fPath := c.Session["pwd"] + "/" + file
-	f, err := os.Open(fPath)
+func (c App) Serve() revel.Result {
+	file := app.Context.Config.MainDir + "/" + c.Params.Get("filepath")
+	log.Println("Serving:", file)
+	f, err := os.Open(file)
 	if err != nil {
 		c.Response.Status = http.StatusBadRequest
 		return c.RenderJson(map[string]interface{}{
@@ -59,7 +59,7 @@ func (c App) Compress() revel.Result {
 					return
 				}
 				app.Context.SocketIO.BroadcastTo("notif", "notif action progress", map[string]interface{}{
-					"message":  "Compressing <strong>" + target + "</strong>...",
+					"message":  "Compressing <strong>" + file + "</strong>...",
 					"progress": progress,
 					"alert":    c.Params.Get("alert_id"),
 					"reload":   reload,
@@ -205,12 +205,9 @@ func (c App) GetFiles() revel.Result {
 
 	c.RenderArgs["noTrash"] = !app.Context.Trash
 	c.RenderArgs["isTrash"] = false
-	log.Println("Session pwd:", path)
 	if path == "" {
-		log.Println("Setting pwd")
 		path = app.Context.Config.MainDir
 	}
-	log.Println("Session pwd after check:", path)
 	switch tmp {
 	case "trash":
 		if !app.Context.Trash {
@@ -228,9 +225,7 @@ func (c App) GetFiles() revel.Result {
 	case "current":
 		path = path
 	case "up":
-		log.Println("PWD (!):", path)
 		isAllowed := strings.HasPrefix(path, app.Context.Config.MainDir)
-		log.Println("Allowed:", isAllowed)
 		if path != app.Context.Config.MainDir && isAllowed {
 			path = filepath.Dir(path)
 		} else {
@@ -239,7 +234,6 @@ func (c App) GetFiles() revel.Result {
 	default:
 		path += "/" + tmp
 	}
-	log.Println("PWD Final:", path)
 	c.Session["pwd"] = path
 	content, err := app.ProcessDir(path)
 	if err != nil {
@@ -268,6 +262,7 @@ func (c App) GetFiles() revel.Result {
 	c.RenderArgs["empty"] = (len(content) == 0)
 	c.RenderArgs["isRoot"] = (path == app.Context.Config.MainDir)
 	c.RenderArgs["content"] = content
+	c.RenderArgs["relPwd"] = strings.TrimLeft(path, app.Context.Config.MainDir+"/")
 	return c.RenderTemplate("App/files.html")
 }
 
