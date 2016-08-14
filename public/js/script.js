@@ -1,8 +1,9 @@
 var socket
+var host = 'http://localhost:9000'
 
 $(document)
 	.ready(function () {
-		socket = io('http://localhost:9000');
+		socket = io(host);
 		socket.on('notif action done', function (v) {
 			$('#' + v.alert)
 				.remove()
