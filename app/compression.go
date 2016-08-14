@@ -4,15 +4,45 @@ import (
 	"archive/tar"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-func CreateArchive(source, target, name string) (*os.File, error) {
+func countRec(source string) uint64 {
+	var count uint64
+	f, err := os.Open(source)
+	if err != nil {
+		log.Fatal(err)
+	}
+	stat, err := f.Stat()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !stat.IsDir() {
+		return 1
+	}
+	files, err := ioutil.ReadDir(source)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			count += countRec(source + "/" + file.Name())
+		}
+		count++
+	}
+	return count
+}
+
+func CreateArchive(source, target, name string, pchan chan uint64) (*os.File, error) {
+	var file uint64
+	count := countRec(source) + 1
+	log.Println("Files:", count)
 	target = filepath.Join(target, fmt.Sprintf("%s.tar", name))
-	log.Println(target)
 	tarfile, err := os.Create(target)
 	if err != nil {
 		return nil, err
@@ -34,6 +64,12 @@ func CreateArchive(source, target, name string) (*os.File, error) {
 
 	return tarfile, filepath.Walk(source,
 		func(path string, info os.FileInfo, err error) error {
+			file++
+			percentage := float64(100.0 * (float32(file) / float32(count)))
+			log.Println("Progress:", math.Ceil(percentage))
+			if pchan != nil {
+				pchan <- uint64(math.Ceil(percentage))
+			}
 			if err != nil {
 				return err
 			}

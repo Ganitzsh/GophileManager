@@ -1,12 +1,5 @@
 var socket
 
-window.onbeforeunload = function (e) {
-	// if (id > 1) {
-	// 	return 'Operations in progress'
-	// }
-	return nil
-};
-
 $(document)
 	.ready(function () {
 		socket = io('http://localhost:9000');
@@ -26,18 +19,28 @@ $(document)
 				fetchContent('current')
 			}
 		})
+		socket.on('notif action progress', function (v) {
+			console.log(v);
+			$('#' + v.alert)
+				.remove()
+			$('#notifications')
+				.append(generateProgressAlert(v.message, v.progress, v.alert))
+			if (v.reload) {
+				fetchContent('current')
+			}
+		})
 		$('.sk-fading-circle')
 			.hide()
 		fetchContent('current')
 	});
 
-function generateProgressAlert(text, id) {
+function generateProgressAlert(text, progress, id) {
 	return `
 	<div class="alert alert-info alert-dismissible" role="alert" id="${id}">
 		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		${text}
 		<div class="progress">
-				<div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%">
+				<div class="progress-bar progress-bar-striped active" role="progressbar" style="width: ${progress}%">
 				</div>
 		</div>
 	</div>
@@ -53,14 +56,18 @@ function generateAlert(type, text, id) {
 	`
 }
 
-function newNotification(type, message) {
+function newNotification(type, message, arg) {
 	var alert
 
 	var uuid = UUID.generate()
 	var domID = 'alert-' + uuid
 	switch (type) {
 	case 'progress':
-		alert = generateProgressAlert(message, domID)
+		if (arg === undefined) {
+			alert = generateAlert('danger', 'Invalid progress alert!', domID)
+		} else {
+			alert = generateProgressAlert(message, arg.progress, domID)
+		}
 		break;
 	case 'done':
 		alert = generateAlert('success', message, domID)
@@ -144,7 +151,9 @@ function convertToMP4(name) {
 function trashFile(name) {
 	bootbox.confirm("<h3>Warning!</h3><p>Move <strong>" + name + "</strong> to trash?</p>", function (result) {
 		if (result) {
-			var alertID = newNotification('progress', 'Moving <strong>' + name + '</strong> to trash')
+			var alertID = newNotification('progress', 'Moving <strong>' + name + '</strong> to trash', {
+				progress: 100
+			})
 			var str = '/app/trash/file/' + name
 			str += '?alert_id=' + alertID
 			var uri = encodeURI(str)
@@ -162,7 +171,9 @@ function trashFile(name) {
 function emptyTrash() {
 	bootbox.confirm("<h3>Warning!</h3><p>Empty the trash?</p><strong>All data will be definitely lost</strong>", function (result) {
 		if (result) {
-			var alertID = newNotification('progress', 'Moving <strong>' + name + '</strong> to trash')
+			var alertID = newNotification('progress', 'Moving <strong>' + name + '</strong> to trash', {
+				progress: 100
+			})
 			var str = '/app/trash/empty'
 			str += '?alert_id=' + alertID
 			var uri = encodeURI(str)
@@ -187,7 +198,9 @@ function previewImage(name) {
 function deleteFile(name) {
 	bootbox.confirm("<h3>Warning!</h3><p>Delete <strong>" + name + "</strong>?</p>", function (result) {
 		if (result) {
-			var alertID = newNotification('progress', 'Deleting <strong>' + name + '</strong>')
+			var alertID = newNotification('progress', 'Deleting <strong>' + name + '</strong>', {
+				progress: 100
+			})
 			var str = '/app/delete/' + name
 			str += '?alert_id=' + alertID
 			var uri = encodeURI(str)

@@ -45,11 +45,29 @@ func (c App) Index() revel.Result {
 
 func (c App) Compress() revel.Result {
 	reload := false
+	pchan := make(chan uint64) // Follow progress
 	oldPwd := c.Session["pwd"]
 	name := c.Params.Get("name")
 	file := c.Params.Get("target")
 	target := c.Session["pwd"]
-	_, err := app.CreateArchive(target+"/"+file, target, name)
+
+	go func() {
+		for {
+			select {
+			case progress := <-pchan:
+				if progress == 100 {
+					return
+				}
+				app.Context.SocketIO.BroadcastTo("notif", "notif action progress", map[string]interface{}{
+					"message":  "Compressing <strong>" + target + "</strong>...",
+					"progress": progress,
+					"alert":    c.Params.Get("alert_id"),
+					"reload":   reload,
+				})
+			}
+		}
+	}()
+	_, err := app.CreateArchive(target+"/"+file, target, name, pchan)
 	if err != nil {
 		app.Context.SocketIO.BroadcastTo("notif", "notif action error", map[string]interface{}{
 			"message": "<strong>" + file + "</strong> commpression error:<br/>" + err.Error(),
@@ -68,6 +86,7 @@ func (c App) Compress() revel.Result {
 		"alert":   c.Params.Get("alert_id"),
 		"reload":  reload,
 	})
+	close(pchan)
 	return c.RenderJson(map[string]interface{}{
 		"message": "Success!",
 	})
