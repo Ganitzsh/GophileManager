@@ -1,10 +1,11 @@
-{{set . "title" "Video player"}} {{template "header.html" .}}
+{{set . "title" "Video player"}}
+{{template "header.html" .}}
 
 <div class="container">
     <h1>You are watching</h1>
-    <p class="lead">{{.video}}</p>
+    <p class="lead">{{.videoName}}</p>
     <video id="videoPlayer" class="video-js vjs-default-skin" width="1280px" height="720px" controls preload="none" data-setup='{ "aspectRatio":"1280:720", "playbackRates": [1, 1.5, 2] }'>
-        <source src="/app/file/{{.video}}" type='video/mp4' />
+        <source src="/app/file/{{.videoPath}}" type='video/mp4'/>
     </video>
 </div>
 
