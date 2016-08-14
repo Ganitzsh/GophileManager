@@ -331,9 +331,12 @@ func (c App) Convert() revel.Result {
 func (c App) Video() revel.Result {
 	file := c.Params.Get("target")
 	relPwd := strings.TrimPrefix(c.Session["pwd"], app.Context.Config.MainDir+"/")
-	path := relPwd + "/" + file
+	path := relPwd
+	if relPwd != "" {
+		path += "/"
+	}
 	log.Println("Watching:", file)
-	c.RenderArgs["videoPath"] = path
+	c.RenderArgs["videoPath"] = path + file
 	c.RenderArgs["videoName"] = file
 	return c.Render()
 }
