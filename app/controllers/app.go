@@ -330,7 +330,9 @@ func (c App) Convert() revel.Result {
 
 func (c App) Video() revel.Result {
 	file := c.Params.Get("target")
+	log.Println(c.Session["pwd"])
 	relPwd := strings.TrimPrefix(c.Session["pwd"], app.Context.Config.MainDir+"/")
+	log.Println(relPwd)
 	path := relPwd
 	if relPwd != "" {
 		path += "/"
