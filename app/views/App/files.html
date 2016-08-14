@@ -125,7 +125,7 @@
                                             {{end}}
                                             {{if eq $cat "Image"}}
                                                 <div class="btn-group btn-group-sm btn-group-xs" role="group">
-                                                    <button onclick="previewImage({{$file.Name}})" data-toggle="tooltip" data-placement="top" title="Preview" type="button" class="btn btn-default" aria-label="Left Align">
+                                                    <button onclick="previewImage({{if ne $.isRoot true}}{{$.relPwd}}/{{end}}{{$file.Name}})" data-toggle="tooltip" data-placement="top" title="Preview" type="button" class="btn btn-default" aria-label="Left Align">
                                                         <span class="glyphicon glyphicon-play" aria-label="Preview"></span>
                                                         <!-- <span class="hidden-xs {{if eq $cat "Video" "Image"}}hidden-sm hidden-md{{end}}">Preview</class> -->
                                                     </button>
