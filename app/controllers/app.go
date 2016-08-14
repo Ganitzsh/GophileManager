@@ -45,7 +45,7 @@ func (c App) Index() revel.Result {
 
 func (c App) Compress() revel.Result {
 	reload := false
-	pchan := make(chan uint64) // Follow progress
+	pchan := make(chan float64) // Follow progress
 	oldPwd := c.Session["pwd"]
 	name := c.Params.Get("name")
 	file := c.Params.Get("target")
@@ -55,7 +55,7 @@ func (c App) Compress() revel.Result {
 		for {
 			select {
 			case progress := <-pchan:
-				if progress == 100 {
+				if progress >= 100 {
 					return
 				}
 				app.Context.SocketIO.BroadcastTo("notif", "notif action progress", map[string]interface{}{

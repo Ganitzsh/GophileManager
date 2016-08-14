@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -38,8 +37,8 @@ func countRec(source string) uint64 {
 	return count
 }
 
-func CreateArchive(source, target, name string, pchan chan uint64) (*os.File, error) {
-	var file uint64
+func CreateArchive(source, target, name string, pchan chan float64) (*os.File, error) {
+	var file float64
 	count := countRec(source) + 1
 	log.Println("Files:", count)
 	target = filepath.Join(target, fmt.Sprintf("%s.tar", name))
@@ -66,9 +65,9 @@ func CreateArchive(source, target, name string, pchan chan uint64) (*os.File, er
 		func(path string, info os.FileInfo, err error) error {
 			file++
 			percentage := float64(100.0 * (float32(file) / float32(count)))
-			log.Println("Progress:", math.Ceil(percentage))
+			log.Println("Progress:", percentage, "%")
 			if pchan != nil {
-				pchan <- uint64(math.Ceil(percentage))
+				pchan <- percentage
 			}
 			if err != nil {
 				return err
