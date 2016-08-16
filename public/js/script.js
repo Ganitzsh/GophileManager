@@ -134,7 +134,9 @@ function watch(name) {
 function convertToMP4(name) {
 	bootbox.confirm("<h3>Convert</h3><p><strong>" + name + "</strong></p><p>Convert it to MP4?</p>", function (result) {
 		if (result) {
-			var alertID = newNotification('progress', 'Converting <strong>' + name + '</strong>')
+			var alertID = newNotification('progress', 'Converting <strong>' + name + '</strong>', {
+				progress: 100
+			})
 			var str = '/app/convert/' + name
 			str += '?alert_id=' + alertID
 			var uri = encodeURI(str)
